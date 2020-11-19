@@ -1,0 +1,53 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  # scrape_timeout is set to the global default (10s).
+
+  external_labels:
+      monitor: 'phd'
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'cassandra1'
+    static_configs:
+      - targets: ['cassandra1:7070','cassandra2:7070''cassandra3:7070']
+#        labels:
+#          service: 'cassandra1'
+#          component: 'cassandra1'
+#          environment: 'environment'
+#          data_center: 'se1'
+#          host: 'cassandra1'
+          
+#  - job_name: 'cassandra2'
+#    static_configs:
+#      - targets: ['cassandra2:7070']
+#        labels:
+#          service: 'cassandra2'
+#          component: 'cassandra2'
+#          environment: 'environment'
+#          data_center: 'se1'
+#          host: 'cassandra2'
+  
+#  - job_name: 'cassandra3'
+#    static_configs:
+#      - targets: ['cassandra3:7070']
+#        labels:
+#          service: 'cassandra3'
+#          component: 'cassandra3'
+#          environment: 'environment'
+#          data_center: 'se1'
+#          host: 'cassandra3'
+     
+#  - job_name: 'cassandra-reaper'
+#    metrics_path: '/prometheusMetrics'
+#    static_configs:
+#      - targets: ['cassandra-reaper:8081']
+#        labels:
+#          service: 'cassandra-reaper'
+#          component: 'cassandra-reaper'
+#          environment: 'environment'
+#          data_center: 'data_center'
+#          host: 'cassandra-reaper'

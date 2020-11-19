@@ -1,0 +1,165 @@
+version: "3.8"
+
+services:
+
+  cassandra1:
+    image: cassandra:phd-cass-3-11-9
+    container_name: cassandra1
+    ports:
+      - 9042:9042 # cqlsh
+      - 7199:7199 # jmx
+      - 7000:7000 # internode communication
+      - 7001:7001 # tls internode
+      - 7071:7070 # jmx
+      - 9103:9103 # jmx
+
+    volumes:
+      - "./data/cassandra1:/var/lib/cassandra"
+    environment: 
+      - "CASSANDRA_SEEDS=cassandra1"
+      - "CASSANDRA_CLUSTER_NAME=phd-cass"
+      - "CASSANDRA_DC=se1"
+      - "CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch"
+    restart: unless-stopped
+    networks: 
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2.3G
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 15s
+    build:
+      context: ./configs/cass
+
+  cassandra2:
+    image: cassandra:phd-cass-3-11-9
+    container_name: cassandra2
+    ports:
+      - 9142:9042 # cqlsh
+      - 7299:7199 # jmx
+      - 7100:7000 # internode communication
+      - 7101:7001 # tls internode
+      - 7072:7070 # jmx
+      - 9203:9103 # jmx
+    volumes:
+      - "./data/cassandra2:/var/lib/cassandra"
+    environment: 
+      - "CASSANDRA_SEEDS=cassandra1"
+      - "CASSANDRA_CLUSTER_NAME=phd-cass"
+      - "CASSANDRA_DC=se1"
+      - "CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch"
+    restart: unless-stopped
+    networks: 
+      - backend
+    depends_on:
+      cassandra1:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2.3G
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 15s
+    build:
+      context: ./configs/cass
+      
+  cassandra3:
+    image: cassandra:phd-cass-3-11-9
+    container_name: cassandra3
+    ports:
+      - 9242:9042 # cqlsh
+      - 7399:7199 # jmx
+      - 7200:7000 # internode communication
+      - 7201:7001 # tls internode
+      - 7073:7070 # jmx
+      - 9303:9103 # jmx
+    volumes:
+      - "./data/cassandra3:/var/lib/cassandra"
+    environment: 
+      - "CASSANDRA_SEEDS=cassandra1"
+      - "CASSANDRA_CLUSTER_NAME=phd-cass"
+      - "CASSANDRA_DC=se1"
+      - "CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch"
+    restart: unless-stopped
+    networks: 
+      - backend
+    depends_on:
+      cassandra1:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2.3G
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "describe keyspaces" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 15s
+    build:
+      context: ./configs/cass
+
+
+#  cassandra-reaper:
+#    image: cassandra-reaper:master
+#    env_file:
+#      - ./configs/cassandra-reaper.env
+#    links:
+#      - cassandra1
+#      - cassandra2
+#      - cassandra3
+#    ports:
+#      - "8080:8080"
+#      - "8081:8081"
+
+  grafana:
+    image: grafana/grafana 
+    container_name: grafana
+    links:
+      - "prometheus"
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    networks: 
+      - backend
+    environment: 
+      - "GF_LOG_MODE=console"
+      - "GF_LOG_CONSOLE_LEVEL=info"
+      - "GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-piechart-panel"
+      - "GF_DEFAULT_INSTANCE_NAME=grafana"
+      - "GF_SERVER_DOMAIN=localhost"
+      
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    links:
+      - "cassandra1"
+      - "cassandra2"
+      - "cassandra3"
+#      - "cassandra-reaper"
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./data/prometheus:/prometheus
+      - ./configs/prom/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks: 
+      - backend   
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+  
+networks:
+  backend:
