@@ -2,21 +2,21 @@ version: "3.8"
 
 services:
 
-  cassandra1:
+  cassandra_1:
     image: cassandra:phd-cass-3-11-9
-    container_name: cassandra1
+    container_name: cassandra_1
     ports:
       - 9042:9042 # cqlsh
       - 7199:7199 # jmx
       - 7000:7000 # internode communication
       - 7001:7001 # tls internode
       - 7071:7070 # jmx
-      - 9103:9103 # jmx
+#      - 9103:9103 # jmx
 
     volumes:
-      - "./data/cassandra1:/var/lib/cassandra"
+      - "./data/cassandra_1:/var/lib/cassandra"
     environment: 
-      - "CASSANDRA_SEEDS=cassandra1"
+      - "CASSANDRA_SEEDS=cassandra_1"
       - "CASSANDRA_CLUSTER_NAME=phd-cass"
       - "CASSANDRA_DC=se1"
       - "CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch"
@@ -37,20 +37,20 @@ services:
     build:
       context: ./configs/cass
 
-  cassandra2:
+  cassandra_2:
     image: cassandra:phd-cass-3-11-9
-    container_name: cassandra2
+    container_name: cassandra_2
     ports:
       - 9142:9042 # cqlsh
       - 7299:7199 # jmx
       - 7100:7000 # internode communication
       - 7101:7001 # tls internode
       - 7072:7070 # jmx
-      - 9203:9103 # jmx
+#      - 9203:9103 # jmx
     volumes:
-      - "./data/cassandra2:/var/lib/cassandra"
+      - "./data/cassandra_2:/var/lib/cassandra"
     environment: 
-      - "CASSANDRA_SEEDS=cassandra1"
+      - "CASSANDRA_SEEDS=cassandra_1"
       - "CASSANDRA_CLUSTER_NAME=phd-cass"
       - "CASSANDRA_DC=se1"
       - "CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch"
@@ -58,7 +58,7 @@ services:
     networks: 
       - backend
     depends_on:
-      cassandra1:
+      cassandra_1:
         condition: service_healthy
     deploy:
       resources:
@@ -74,20 +74,20 @@ services:
     build:
       context: ./configs/cass
       
-  cassandra3:
+  cassandra_3:
     image: cassandra:phd-cass-3-11-9
-    container_name: cassandra3
+    container_name: cassandra_3
     ports:
       - 9242:9042 # cqlsh
       - 7399:7199 # jmx
       - 7200:7000 # internode communication
       - 7201:7001 # tls internode
       - 7073:7070 # jmx
-      - 9303:9103 # jmx
+#      - 9303:9103 # jmx
     volumes:
-      - "./data/cassandra3:/var/lib/cassandra"
+      - "./data/cassandra_3:/var/lib/cassandra"
     environment: 
-      - "CASSANDRA_SEEDS=cassandra1"
+      - "CASSANDRA_SEEDS=cassandra_1"
       - "CASSANDRA_CLUSTER_NAME=phd-cass"
       - "CASSANDRA_DC=se1"
       - "CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch"
@@ -95,7 +95,7 @@ services:
     networks: 
       - backend
     depends_on:
-      cassandra1:
+      cassandra_1:
         condition: service_healthy
     deploy:
       resources:
@@ -117,9 +117,9 @@ services:
 #    env_file:
 #      - ./configs/cassandra-reaper.env
 #    links:
-#      - cassandra1
-#      - cassandra2
-#      - cassandra3
+#      - cassandra_1
+#      - cassandra_2
+#      - cassandra_3
 #    ports:
 #      - "8080:8080"
 #      - "8081:8081"
@@ -147,9 +147,9 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     links:
-      - "cassandra1"
-      - "cassandra2"
-      - "cassandra3"
+      - "cassandra_1"
+      - "cassandra_2"
+      - "cassandra_3"
 #      - "cassandra-reaper"
     ports:
       - "9090:9090"

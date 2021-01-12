@@ -11,35 +11,35 @@ scrape_configs:
     static_configs:
       - targets: ['localhost:9090']
 
-  - job_name: 'cassandra1'
+  - job_name: 'cassandra_1'
     static_configs:
-      - targets: ['cassandra1:7070','cassandra2:7070''cassandra3:7070']
-#        labels:
-#          service: 'cassandra1'
-#          component: 'cassandra1'
-#          environment: 'environment'
-#          data_center: 'se1'
-#          host: 'cassandra1'
+      - targets: ['cassandra_1:7070']
+        labels:
+          service: 'cassandra_1'
+          component: 'cassandra_1'
+          environment: 'environment'
+          data_center: 'se1'
+          host: 'cassandra_1'
           
-#  - job_name: 'cassandra2'
-#    static_configs:
-#      - targets: ['cassandra2:7070']
-#        labels:
-#          service: 'cassandra2'
-#          component: 'cassandra2'
-#          environment: 'environment'
-#          data_center: 'se1'
-#          host: 'cassandra2'
+  - job_name: 'cassandra_2'
+    static_configs:
+      - targets: ['cassandra_2:7070']
+        labels:
+          service: 'cassandra_2'
+          component: 'cassandra_2'
+          environment: 'environment'
+          data_center: 'se1'
+          host: 'cassandra_2'
   
-#  - job_name: 'cassandra3'
-#    static_configs:
-#      - targets: ['cassandra3:7070']
-#        labels:
-#          service: 'cassandra3'
-#          component: 'cassandra3'
-#          environment: 'environment'
-#          data_center: 'se1'
-#          host: 'cassandra3'
+  - job_name: 'cassandra_3'
+    static_configs:
+      - targets: ['cassandra_3:7070']
+        labels:
+          service: 'cassandra_3'
+          component: 'cassandra_3'
+          environment: 'environment'
+          data_center: 'se1'
+          host: 'cassandra_3'
      
 #  - job_name: 'cassandra-reaper'
 #    metrics_path: '/prometheusMetrics'
