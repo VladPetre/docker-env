@@ -2,9 +2,9 @@ version: "3.8"
 
 services:
 
-  cassandra_1:
+  cassandra-1:
     image: cassandra:phd-cass-3-11-9
-    container_name: cassandra_1
+    container_name: cassandra-1
     ports:
       - 9042:9042 # cqlsh
       - 7199:7199 # jmx
@@ -14,9 +14,9 @@ services:
 #      - 9103:9103 # jmx
 
     volumes:
-      - "./data/cassandra_1:/var/lib/cassandra"
+      - "./data/cassandra-1:/var/lib/cassandra"
     environment: 
-      - "CASSANDRA_SEEDS=cassandra_1"
+      - "CASSANDRA_SEEDS=cassandra-1"
       - "CASSANDRA_CLUSTER_NAME=phd-cass"
       - "CASSANDRA_DC=se1"
       - "CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch"
@@ -37,9 +37,9 @@ services:
     build:
       context: ./configs/cass
 
-  cassandra_2:
+  cassandra-2:
     image: cassandra:phd-cass-3-11-9
-    container_name: cassandra_2
+    container_name: cassandra-2
     ports:
       - 9142:9042 # cqlsh
       - 7299:7199 # jmx
@@ -48,9 +48,9 @@ services:
       - 7072:7070 # jmx
 #      - 9203:9103 # jmx
     volumes:
-      - "./data/cassandra_2:/var/lib/cassandra"
+      - "./data/cassandra-2:/var/lib/cassandra"
     environment: 
-      - "CASSANDRA_SEEDS=cassandra_1"
+      - "CASSANDRA_SEEDS=cassandra-1"
       - "CASSANDRA_CLUSTER_NAME=phd-cass"
       - "CASSANDRA_DC=se1"
       - "CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch"
@@ -58,7 +58,7 @@ services:
     networks: 
       - backend
     depends_on:
-      cassandra_1:
+      cassandra-1:
         condition: service_healthy
     deploy:
       resources:
@@ -74,9 +74,9 @@ services:
     build:
       context: ./configs/cass
       
-  cassandra_3:
+  cassandra-3:
     image: cassandra:phd-cass-3-11-9
-    container_name: cassandra_3
+    container_name: cassandra-3
     ports:
       - 9242:9042 # cqlsh
       - 7399:7199 # jmx
@@ -85,9 +85,9 @@ services:
       - 7073:7070 # jmx
 #      - 9303:9103 # jmx
     volumes:
-      - "./data/cassandra_3:/var/lib/cassandra"
+      - "./data/cassandra-3:/var/lib/cassandra"
     environment: 
-      - "CASSANDRA_SEEDS=cassandra_1"
+      - "CASSANDRA_SEEDS=cassandra-1"
       - "CASSANDRA_CLUSTER_NAME=phd-cass"
       - "CASSANDRA_DC=se1"
       - "CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch"
@@ -95,7 +95,7 @@ services:
     networks: 
       - backend
     depends_on:
-      cassandra_1:
+      cassandra-1:
         condition: service_healthy
     deploy:
       resources:
@@ -111,18 +111,6 @@ services:
     build:
       context: ./configs/cass
 
-
-#  cassandra-reaper:
-#    image: cassandra-reaper:master
-#    env_file:
-#      - ./configs/cassandra-reaper.env
-#    links:
-#      - cassandra_1
-#      - cassandra_2
-#      - cassandra_3
-#    ports:
-#      - "8080:8080"
-#      - "8081:8081"
 
   grafana:
     image: grafana/grafana 
@@ -147,10 +135,10 @@ services:
     image: prom/prometheus:latest
     container_name: prometheus
     links:
-      - "cassandra_1"
-      - "cassandra_2"
-      - "cassandra_3"
-#      - "cassandra-reaper"
+      - "cassandra-1"
+      - "cassandra-2"
+      - "cassandra-3"
+      - "casstres-1"
     ports:
       - "9090:9090"
     volumes:
@@ -161,5 +149,27 @@ services:
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
   
+  casstres-1:
+    container_name: casstres-1
+    ports:
+      - 8081:8080
+    restart: unless-stopped
+    networks: 
+      - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: "curl --fail --silent --request GET localhost:8080/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    build:
+      context: ./configs/apps/cass
+      
+      
 networks:
   backend:
